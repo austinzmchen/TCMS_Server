@@ -1,0 +1,21 @@
+// tsconfig.json
+{
+    "compilerOptions": {
+        "lib": ["es5", "es6"], // need lib, otherwise creating table not work
+        "target": "es6",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "pretty": true,
+        "sourceMap": true,
+        "outDir": "./dist",
+        "baseUrl": "./src"
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}
