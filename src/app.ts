@@ -8,6 +8,7 @@ import {createConnection} from "typeorm";
 import { User } from "./entity/User";
 import { Course } from "./entity/Course"
 import { CourseSchedule } from "./entity/CourseSchedule";
+import { Event } from "./entity/Event";
 
 // create typeorm connection
 createConnection().then(connection => {
@@ -178,6 +179,41 @@ createConnection().then(connection => {
         courseSchRepository.save(schs)
         res.status(200).send(true)
     })
+
+    const eventRepository = connection.getRepository(Event);
+    app.get("/events", async function(req: Request, res: Response) {
+        const items = await eventRepository.find();
+        console.log("events: ", items)
+        res.status(200).send(items)
+    });
+    
+    app.post("/events", async function(req: Request, res: Response) {
+        const items = eventRepository.create(req.body);
+        eventRepository.save(items);
+        res.status(200).send(items)
+    });
+    
+    app.get("/events/:id", async function(req: Request, res: Response) {
+        const item = await eventRepository.findOne(req.params.id);
+        res.status(200).send(item)
+    });
+
+    app.put("/events/:id", async function(req: Request, res: Response) {
+        eventRepository.update(req.params.id, req.body)
+            .then(result => { 
+                res.status(200).send(result.raw)
+            })        
+    });
+
+    app.delete("/events/:id", async function(req: Request, res: Response) {
+        let item = await eventRepository.findOne(req.params.id);
+        if (item === undefined) {
+            res.status(200).send(false)
+        } else {
+            await eventRepository.remove(item);
+            res.status(200).send(true)
+        }
+    });
 
     // start express server
     app.listen(3000);

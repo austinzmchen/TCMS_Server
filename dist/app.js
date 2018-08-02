@@ -15,6 +15,7 @@ const typeorm_1 = require("typeorm");
 const User_1 = require("./entity/User");
 const Course_1 = require("./entity/Course");
 const CourseSchedule_1 = require("./entity/CourseSchedule");
+const Event_1 = require("./entity/Event");
 // create typeorm connection
 typeorm_1.createConnection().then(connection => {
     // create and setup express app
@@ -193,6 +194,47 @@ typeorm_1.createConnection().then(connection => {
             }
             courseSchRepository.save(schs);
             res.status(200).send(true);
+        });
+    });
+    const eventRepository = connection.getRepository(Event_1.Event);
+    app.get("/events", function (req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const items = yield eventRepository.find();
+            console.log("events: ", items);
+            res.status(200).send(items);
+        });
+    });
+    app.post("/events", function (req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const items = eventRepository.create(req.body);
+            eventRepository.save(items);
+            res.status(200).send(items);
+        });
+    });
+    app.get("/events/:id", function (req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const item = yield eventRepository.findOne(req.params.id);
+            res.status(200).send(item);
+        });
+    });
+    app.put("/events/:id", function (req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            eventRepository.update(req.params.id, req.body)
+                .then(result => {
+                res.status(200).send(result.raw);
+            });
+        });
+    });
+    app.delete("/events/:id", function (req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let item = yield eventRepository.findOne(req.params.id);
+            if (item === undefined) {
+                res.status(200).send(false);
+            }
+            else {
+                yield eventRepository.remove(item);
+                res.status(200).send(true);
+            }
         });
     });
     // start express server
