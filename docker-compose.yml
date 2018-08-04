@@ -1,0 +1,22 @@
+version: "2"
+
+services:
+
+   # mysql
+  mysql:
+    image: "mysql:5.7.19"
+    container_name: "typeorm-mg-mysql"
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+
+  web:
+    build: .
+    depends_on:
+      mysql
+    command: npm run debug
+    volumes:
+      - ./dist:/tcms-server/dist
+    ports:
+      - "3001:3001"

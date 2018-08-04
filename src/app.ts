@@ -5,7 +5,6 @@ import * as bodyParser from  "body-parser";
 import "reflect-metadata";
 import {createConnection} from "typeorm";
 
-import { User } from "./entity/User";
 import { Course } from "./entity/Course"
 import { CourseSchedule } from "./entity/CourseSchedule";
 import { Event } from "./entity/Event";
@@ -21,41 +20,6 @@ createConnection().then(connection => {
         res.status(200).send({
             meg: "Hello World!"
         })
-    });
-
-    const userRepository = connection.getRepository(User);
-    app.get("/users", async function(req: Request, res: Response) {
-        const users = await userRepository.find();
-        console.log("users: ", users)
-        res.status(200).send(users)
-    });
-    
-    app.post("/users", async function(req: Request, res: Response) {
-        const user = userRepository.create(req.body);
-        userRepository.save(user);
-        res.status(200).send(user)
-    });
-    
-    app.get("/users/:id", async function(req: Request, res: Response) {
-        const user = await userRepository.findOne(req.params.id);
-        res.status(200).send(user)
-    });
-
-    app.put("/users/:id", async function(req: Request, res: Response) {
-        userRepository.update(req.params.id, req.body)
-            .then(result => { 
-                res.status(200).send(result.raw)
-            })        
-    });
-
-    app.delete("/users/:id", async function(req: Request, res: Response) {
-        let user = await userRepository.findOne(req.params.id);
-        if (user === undefined) {
-            res.status(200).send(false)
-        } else {
-            await userRepository.remove(user);
-            res.status(200).send(true)
-        }
     });
     
     // Courses 
@@ -98,10 +62,11 @@ createConnection().then(connection => {
         courseSch.startAt = req.body["startAt"]
         courseSch.recurrentInterval = req.body["recurrentInterval"]
         courseSch.duration = req.body["duration"]
+        courseSch.images = req.body["images"]
         courseSch.course = course
 
         await courseSchRepository.save(courseSch)
-        res.status(200).send(true)
+        res.status(200).send({"error": null})
     })
 
     app.get("/courseSchedules", async function(req: Request, res: Response) {
@@ -139,9 +104,11 @@ createConnection().then(connection => {
             .getMany()
 
         const last = items[items.length-1]
+        const next = last === undefined ? null : "after=" + last.id
+
         const r = {
             "paging": {
-                "next": "after=" + last.id
+                "next": next
             },
             "data": items
         }
