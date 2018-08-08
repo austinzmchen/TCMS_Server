@@ -26,8 +26,8 @@ createConnection().then(connection => {
     const courseRepository = connection.getRepository(Course);
     app.post("/courses", async function(req: Request, res: Response) {
         const course = courseRepository.create(req.body)
-        await courseRepository.save(course)
-        res.status(200).send(course)
+        let r = await courseRepository.save(course)
+        res.status(200).send(r)
     })
 
     app.get("/courses", async function(req: Request, res: Response) {
@@ -47,6 +47,16 @@ createConnection().then(connection => {
             })             
     })
 
+    app.delete("/courses/:id", async function(req: Request, res: Response) {
+        let item = await courseRepository.findOne(req.params.id);
+        if (item === undefined) {
+            res.status(200).send(false)
+        } else {
+            await courseRepository.remove(item);
+            res.status(200).send(true)
+        }
+    });
+
     // Course schedules 
     const courseSchRepository = connection.getRepository(CourseSchedule);
     app.post("/courseSchedules", async function(req: Request, res: Response) {
@@ -65,14 +75,11 @@ createConnection().then(connection => {
         courseSch.images = req.body["images"]
         courseSch.course = course
 
-        await courseSchRepository.save(courseSch)
-        res.status(200).send({"error": null})
+        let r = await courseSchRepository.save(courseSch)
+        res.status(200).send(r)
     })
 
     app.get("/courseSchedules", async function(req: Request, res: Response) {
-        // const items = await courseSchRepository.find({ relations: ["course"] });
-        // res.status(200).send(items)
-
         var startTime = req.query["startTime"]
         if (startTime === undefined) { startTime = "0000-01-01T00:00:00Z"}
         var endTime = req.query["endTime"]
@@ -131,6 +138,16 @@ createConnection().then(connection => {
             })             
     })
 
+    app.delete("/courseSchedules/:id", async function(req: Request, res: Response) {
+        let item = await courseSchRepository.findOne(req.params.id);
+        if (item === undefined) {
+            res.status(200).send(false)
+        } else {
+            await courseSchRepository.remove(item);
+            res.status(200).send(true)
+        }
+    });
+
     app.post("/courseSchedules/populate", async function(req: Request, res: Response) {
         const schs: CourseSchedule[] = [];
     
@@ -143,21 +160,52 @@ createConnection().then(connection => {
             schs.push(sch);
         }
 
-        courseSchRepository.save(schs)
+        await courseSchRepository.save(schs)
         res.status(200).send(true)
     })
 
     const eventRepository = connection.getRepository(Event);
     app.get("/events", async function(req: Request, res: Response) {
-        const items = await eventRepository.find();
-        console.log("events: ", items)
-        res.status(200).send(items)
+        var pageSize = req.query["pageSize"]
+        if (pageSize === undefined) { pageSize = 20 }
+        var cursorAfter = req.query["after"]
+        
+        const qb = eventRepository
+            .createQueryBuilder("ev")
+            .orderBy("ev.createdAt", "DESC")
+            .addOrderBy("ev.id")
+        
+        const its = await qb
+            .getMany()
+
+        var index = its.findIndex(i => i.id == cursorAfter)
+        if (index === -1) { 
+            index = 0 
+        } else {
+            index++
+        }
+
+        const items = await qb
+            .skip(index)
+            .take(pageSize)
+            .getMany()
+
+        const last = items[items.length-1]
+        const next = last === undefined ? null : "after=" + last.id
+
+        const r = {
+            "paging": {
+                "next": next
+            },
+            "data": items
+        }
+        res.status(200).send(r)
     });
     
     app.post("/events", async function(req: Request, res: Response) {
         const items = eventRepository.create(req.body);
-        eventRepository.save(items);
-        res.status(200).send(items)
+        let r = await eventRepository.save(items);
+        res.status(200).send(r)
     });
     
     app.get("/events/:id", async function(req: Request, res: Response) {

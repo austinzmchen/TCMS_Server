@@ -1,6 +1,7 @@
 
 import {Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn} from "typeorm";
 import { CourseSchedule } from "./CourseSchedule";
+import { Image } from "./Image";
 
 @Entity()
 export class Course {
@@ -25,6 +26,9 @@ export class Course {
 
     @Column()
     createdAt: string;
+
+    @Column("simple-json")
+    images: Image[];
 
     @OneToMany(type => CourseSchedule, courseSchedule => courseSchedule.course)
     @JoinColumn()
