@@ -13,7 +13,7 @@ export class CourseSchedule {
     @JoinColumn()
     course: Course;
 
-    @Column()
+    @Column("text")
     desc: string;
     
     @Column()

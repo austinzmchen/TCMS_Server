@@ -9,10 +9,10 @@ export class Course {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column("text")
     title: string;
 
-    @Column()
+    @Column("text")
     desc: string;
     
     @Column()
