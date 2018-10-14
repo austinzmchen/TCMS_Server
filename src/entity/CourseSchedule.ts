@@ -14,6 +14,9 @@ export class CourseSchedule {
     course: Course;
 
     @Column("text")
+    title: string;
+    
+    @Column("text")
     desc: string;
     
     @Column()

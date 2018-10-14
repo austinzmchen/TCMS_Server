@@ -1,5 +1,7 @@
 # TCMS_Server
 
+**Compile and run project:**
+
 ```
 tsc -p tsconfig.json
 
@@ -17,3 +19,9 @@ node --version
 // solve an error
 ln -s /usr/bin/nodejs /usr/bin/node
 ```
+
+**Events**:
+
+/events?isFeatured=true
+
+get featured events

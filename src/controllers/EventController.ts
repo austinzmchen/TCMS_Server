@@ -12,7 +12,9 @@ export class EventController {
 
         const eventRepository = getConnection().getRepository(Event)
         router.get("/", async function(req: Request, res: Response) {
-            var isFeatured = req.query["isFeatured"] === "true" // param expect "true"
+            var isFeaturedOn = req.query["isFeatured"] === "true" // param expect "true"
+            var isFeaturedOff = req.query["isFeatured"] === "false" // param expect "true"
+            var ignoreFeatured = !isFeaturedOn && !isFeaturedOff
             
             var pageSize = req.query["pageSize"]
             if (pageSize === undefined) { pageSize = 20 }
@@ -23,9 +25,14 @@ export class EventController {
                 .orderBy("ev.createdAt", "DESC")
                 .addOrderBy("ev.id")
 
-            if (isFeatured) {
-                qb = qb
-                    .where("notes = 'isFeatured'")
+            if (!ignoreFeatured) {
+                if (isFeaturedOn) {
+                    qb = qb
+                        .where("notes = 'isFeatured'")
+                } else {
+                    qb = qb
+                        .where("notes <> 'isFeatured'") // '<>' correct syntax?
+                }
             }
             
             const its = await qb
